@@ -1,0 +1,9 @@
+{
+  "name": "snake01",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "express": "~4.16.1",
+    "socket.io": "^2.3.0"
+  }
+}
