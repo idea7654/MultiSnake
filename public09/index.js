@@ -117,13 +117,6 @@ function init() {
     setInterval(gameLoop, 80);
 }
 
-function joinUser(x, y, xspeed, yspeed){
-  s.x = x;
-  s.y = y;
-  s.xspeed = xspeed;
-  s.yspeed = yspeed;
-}
-
 // key control
 
 function set_key() {
@@ -141,14 +134,12 @@ document.onkeydown = set_key;
 
 //socket
 
-socket.on('foodLocation', (data) => {
-  food = data;
+socket.on('foodLocation', (foodData) => {
+  food = foodData;
 });
 
-socket.on('snakeLocation', (data) => {
-  for(var i in data){
-    joinUser(data[i].x, data[i].y, data[i].xspeed, data[i].yspeed);
-  }
+socket.on('snakeLocation', (snakeData) => {
+  s = snakeData;
 });
 
 socket.on('keyEvent', (keyData) => {

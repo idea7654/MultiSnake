@@ -15,37 +15,36 @@ var io = socket(server);
 io.on('connection', (socket) => {
   console.log("a user connected");
   //console.log(socket.id);
-  socket.on('snakeLocation', (data) => {
+  socket.on('snakeLocation', (dataSnake) => {
     if(players.length === 0){
-      players.push(data);
+      players.push(dataSnake);
     }else{
       for(var j = 0; j < players.length; j++){
-        if(players[j].id === data.id){
-          players[j] = data;
+        if(players[j].id === dataSnake.id){
+          players[j] = dataSnake;
           break;
         }
         if(j === players.length - 1){
-          players.push(data);
+          players.push(dataSnake);
         }
       }
     }
-    console.log(players);
     io.emit('snakeLocation', players);
   });
   /*
-  socket.on('keyEvent', (data) => {
-    //console.log(data);
-    io.emit('keyEvent', data);
+  socket.on('keyEvent', (dataKey) => {
+    //console.log(dataKey);
+    io.emit('keyEvent', dataKey);
   });
   */
 /*
-  socket.on('tailInfo', (data) => {
+  socket.on('tailInfo', (dataTail) => {
     console.log(data);
-    io.emit('tailInfo', data);
+    io.emit('tailInfo', dataTail);
   });
 */
-  socket.on('foodLocation', (data) => {
-    io.emit('foodLocation', data);
+  socket.on('foodLocation', (dataFood) => {
+    io.emit('foodLocation', dataFood);
   });
 
   socket.on('disconnect', () => {

@@ -134,35 +134,21 @@ document.onkeydown = set_key;
 
 //socket
 
-socket.on('foodLocation', (data) => {
-  food = data;
+socket.on('foodLocation', (foodData) => {
+  food = foodData;
 });
 
-socket.on('snakeLocation', (data) => {
-
-  for(var i in data){
-    if(data[i].id === socket.id){
-      var index = data.indexOf(data[i]);
-      data.splice(index, 1);
-      if(data[i] === undefined){
-        ctx.fillRect(data[0].x, data[0].y, scl, scl);
-        ctx.fillStyle = "blue";
-      }
-      else{
-        ctx.fillRect(data[i].x, data[i].y, scl, scl);
+socket.on('snakeLocation', (snakeData) => {
+  snakeData.forEach((snakeElement) => {
+    if(snakeElement.id === socket.id){
+      var index = snakeData.indexOf(snakeElement);
+      snakeData.splice(index, 1);
+      for(var j in snakeData){
+        ctx.fillRect(snakeData[j].x, snakeData[j].y, scl, scl);
         ctx.fillStyle = "blue";
       }
     }
-  }
-  /*
-  for(var j = data.length; i > 1; i -= 1){
-    if(data[j].id === socket.id){
-      var index = data.indexOf(data[j]);
-      data.splice(index, 1);
-      ctx.fillRect(data[j-1].x, data[j-1].y, scl, scl);
-      ctx.fillStyle = "blue";
-    }
-  }*/
+  });
 });
 /*
 socket.on('keyEvent', (keyData) => {
