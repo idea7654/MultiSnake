@@ -6,7 +6,7 @@ var app = express();
 var server = app.listen(3000);
 var players = [];
 
-app.use(express.static('public10'));
+app.use(express.static('public11'));
 console.log('server is connected');
 
 //socket
