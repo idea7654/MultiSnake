@@ -4,7 +4,7 @@ var s;
 var scl = 20;
 var food = {x: null, y: null};
 var socket = io();
-var key = {l: 0, r:0, u:0, d:0};
+var key = {l:0, r:0, u:0, d:0};
 
 function sendData() {
   socket.emit('snakeLocation', s);
@@ -91,10 +91,10 @@ function drawFood() {
 }
 
 function update() {
-      if(key.l) {s.dir(-1, 0);}
-      if(key.r) {s.dir(1, 0);}
-      if(key.u) {s.dir(0, -1);}
-      if(key.d) {s.dir(0, 1);}
+    if (key.l) { s.dir(-1, 0); }
+    if (key.r) { s.dir(1, 0); }
+    if (key.u) { s.dir(0, -1); }
+    if (key.d) { s.dir(0, 1); }
 }
 
 function gameLoop() {
@@ -109,7 +109,6 @@ function gameLoop() {
     sendData();
 }
 
-
 function init() {
     vcanvas = document.getElementById("myCanvas");
     ctx = vcanvas.getContext("2d");
@@ -121,27 +120,28 @@ function init() {
 // key control
 
 function set_key() {
-    key.l = key.r = key.u = key.d = 0;
+  key.l = key.r = key.u = key.d = 0;
 
-    if (event.keyCode === 37) { key.l = 1; }
-    if (event.keyCode === 39) { key.r = 1; }
-    if (event.keyCode === 38) { key.u = 1; }
-    if (event.keyCode === 40) { key.d = 1; }
+  if (event.keyCode === 37) { key.l = 1; }
+  if (event.keyCode === 39) { key.r = 1; }
+  if (event.keyCode === 38) { key.u = 1; }
+  if (event.keyCode === 40) { key.d = 1; }
 
-    socket.emit('keyEvent', key);
+  socket.emit('keyEvent', key);
 } //키데이터 넘기기
 
 document.onkeydown = set_key;
 
 //socket
 
-socket.on('foodLocation', (data) => {
-  food = data;
+socket.on('foodLocation', (foodData) => {
+  food = foodData;
 });
 
-socket.on('snakeLocation', (snakeData) => { //이름바꿔줄
-  //console.log(data.x); //작동
-  s = snakeData;
+socket.on('snakeLocation', (snakeData) => {
+  s.x = data.x;
+  s.y = data.y;
+  s.tail = data.tail;
 });
 
 socket.on('keyEvent', (keyData) => {

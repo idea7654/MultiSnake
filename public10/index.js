@@ -5,6 +5,7 @@ var scl = 20;
 var food = {x: null, y: null};
 var socket = io();
 var key = {l:0, r:0, u:0, d:0};
+var arrSnake = [];
 
 function sendData() {
   socket.emit('snakeLocation', s);
@@ -54,19 +55,25 @@ function Snake(id, x, y, xspeed, yspeed) {
         this.xspeed = x;
         this.yspeed = y;
     };
+}
 
-    this.draw = function () {
-        // new -----------------
-        var i;
-        ctx.fillStyle = 'gray';
-        for (i = 0; i < this.tail.length - 1; i += 1) {
-            ctx.fillRect(this.tail[i].x, this.tail[i].y, scl, scl);
-        }
-        // --------------------
-
-        ctx.fillStyle = 'black';
-        ctx.fillRect(this.x, this.y, scl, scl);
-    };
+function drawSnake(si) {
+      var i;
+      if(si.id === s.id){
+        ctx.fillStyle = "gray";
+      }else{
+        ctx.fillStyle = "skyblue";
+      }
+      for (i = 0; i < si.tail.length - 1; i += 1) {
+          ctx.fillRect(si.tail[i].x, si.tail[i].y, scl, scl);
+      }
+      
+      if(si.id === s.id){
+        ctx.fillStyle = "black";
+      }else{
+        ctx.fillStyle = "blue";
+      }
+      ctx.fillRect(si.x, si.y, scl, scl);
 }
 
 function clearCanvas() {
@@ -98,6 +105,7 @@ function update() {
 }
 
 function gameLoop() {
+    var i = 0;
     sendData();
     clearCanvas();
     update();
@@ -106,7 +114,9 @@ function gameLoop() {
       pickLocation();
     }
     drawFood();
-    s.draw();
+    for(i; i<arrSnake.length; i++){
+      drawSnake(arrSnake[i]);
+    }
 }
 
 function init() {
@@ -119,16 +129,14 @@ function init() {
 
 // key control
 
-function set_key() {
+function set_key(evt) {
   key.l = key.r = key.u = key.d = 0;
 
   if (event.keyCode === 37) { key.l = 1; }
   if (event.keyCode === 39) { key.r = 1; }
   if (event.keyCode === 38) { key.u = 1; }
   if (event.keyCode === 40) { key.d = 1; }
-
-  //socket.emit('keyEvent', key);
-} //키데이터 넘기기
+} //터치컨트롤
 
 document.onkeydown = set_key;
 
@@ -138,24 +146,6 @@ socket.on('foodLocation', (foodData) => {
   food = foodData;
 });
 
-socket.on('snakeLocation', (snakeData) => {
-  for(var i in snakeData){
-    if(snakeData[i].id === socket.id){
-      var index = snakeData.indexOf(snakeData[i]);
-      snakeData.splice(index, 1);
-      if(snakeData[i] === undefined){
-        ctx.fillRect(snakeData[0].x, snakeData[0].y, scl, scl);
-        ctx.fillStyle = "blue";
-      }
-      else{
-        ctx.fillRect(data[i].x, data[i].y, scl, scl);
-        ctx.fillStyle = "blue";
-      }
-    }
-  }
+socket.on('snakeLocation', (arrServer) => {
+  arrSnake = arrServer;
 });
-/*
-socket.on('keyEvent', (keyData) => {
-  key = keyData;
-});
-*/

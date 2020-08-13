@@ -4,19 +4,18 @@ var s;
 var scl = 20;
 var food = {x: null, y: null};
 var socket = io();
-var key = {l:0, r:0, u:0, d:0};
-var arrSnake = [];
+var key = {l: 0, r:0, u:0, d:0};
 
 function sendData() {
   socket.emit('snakeLocation', s);
 }
 
-function Snake(id, x, y, xspeed, yspeed) {
-    this.id = id;
-    this.x = x;
-    this.y = y;
-    this.xspeed = xspeed;
-    this.yspeed = yspeed;
+function Snake() {
+    this.id = socket.id;
+    this.x = 0;
+    this.y = 0;
+    this.xspeed = 0;
+    this.yspeed = 0;
     this.tail = [];     // new
 
     this.update = function () {
@@ -66,31 +65,8 @@ function Snake(id, x, y, xspeed, yspeed) {
         // --------------------
 
         ctx.fillStyle = 'black';
-        ctx.fillRect(this.x, this.y, scl, scl); //밖으로뺌
+        ctx.fillRect(this.x, this.y, scl, scl);
     };
-}
-
-function drawSnake(si) {
-      // new -----------------
-      var i;
-      if(si.id === s.id){
-        ctx.fillStyle = "gray"
-      }else{
-        ctx.fillStyle = "skyblue";
-      }
-      for (i = 0; i < si.tail.length - 1; i += 1) {
-          ctx.fillRect(si.tail[i].x, si.tail[i].y, scl, scl);
-      }
-      // --------------------
-
-      //ctx.fillStyle = 'black';
-
-      if(si.id === s.id){
-        ctx.fillStyle = "black";
-      }else{
-        ctx.fillStyle = "blue";
-      }
-      ctx.fillRect(si.x, si.y, scl, scl);
 }
 
 function clearCanvas() {
@@ -115,15 +91,13 @@ function drawFood() {
 }
 
 function update() {
-    if (key.l) { s.dir(-1, 0); }
-    if (key.r) { s.dir(1, 0); }
-    if (key.u) { s.dir(0, -1); }
-    if (key.d) { s.dir(0, 1); }
+  if(key.l) {s.dir(-1, 0);}
+  if(key.r) {s.dir(1, 0);}
+  if(key.u) {s.dir(0, -1);}
+  if(key.d) {s.dir(0, 1);}
 }
 
 function gameLoop() {
-    var i = 0;
-    sendData();
     clearCanvas();
     update();
     s.update();
@@ -131,45 +105,46 @@ function gameLoop() {
       pickLocation();
     }
     drawFood();
-    for(i; i<arrSnake.length; i++){
-      drawSnake(arrSnake[i]);
-    }
+    s.draw();
+    sendData();
 }
 
 function init() {
     vcanvas = document.getElementById("myCanvas");
     ctx = vcanvas.getContext("2d");
-    s = new Snake(socket.id, 0, 0, 0, 0);
+    s = new Snake();
     pickLocation();
     setInterval(gameLoop, 80);
 }
 
 // key control
 
-function set_key(evt) {
-  key.l = key.r = key.u = key.d = 0;
-  var clientX = evt.touches[0].clientX;
-  var clientY = evt.touches[0].clientY;
+function set_key() {
+    key.l = key.r = key.u = key.d = 0;
 
-  if(clientX < 100){key.l = 1;}
-  if(clientX > 500){key.r = 1;}
-  if(clientX > 100 && clientX < 500 && clientY < 300){key.u = 1;}
-  if(clientX > 100 && clientX < 500 && clientY > 300){key.d = 1;}
-} //터치컨트롤
+    if (event.keyCode === 37) { key.l = 1; }
+    if (event.keyCode === 39) { key.r = 1; }
+    if (event.keyCode === 38) { key.u = 1; }
+    if (event.keyCode === 40) { key.d = 1; }
 
-document.ontouchstart = set_key;
+    socket.emit('keyEvent', key);
+} //키데이터 넘기기
 
-//socket
+document.onkeydown = set_key;
+
+//socket(받는것만)
 
 socket.on('foodLocation', (foodData) => {
   food = foodData;
 });
 
-socket.on('snakeLocation', (arrServer) => {
-  arrSnake = arrServer;
+socket.on('snakeLocation', (snakeData) => { //이름바꿔줄
+  //console.log(data.x); //작동
+  s.x = data.x;
+  s.y = data.y;
+  s.tail = data.tail;
 });
-/*
+
 socket.on('keyEvent', (keyData) => {
   key = keyData;
 });
-*/

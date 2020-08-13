@@ -29,28 +29,20 @@ io.on('connection', (socket) => {
         }
       }
     }
-    console.log(players);
     io.emit('snakeLocation', players);
   });
 
-  socket.on('keyEvent', (dataKey) => {
-    //console.log(data);
-    io.emit('keyEvent', dataKey);
-  });
-/*
-  socket.on('tailInfo', (data) => {
-    console.log(data);
-    io.emit('tailInfo', data);
-  });
-*/
   socket.on('foodLocation', (dataFood) => {
-    //console.log(data);
     io.emit('foodLocation', dataFood);
   });
 
   socket.on('disconnect', () => {
     console.log('disconnected');
-    var index = players.indexOf(socket.id);
-    players.splice(index, 1);
+    players.forEach((element) => {
+      if(element.id === socket.id){
+        var index = players.indexOf(element);
+        players.splice(index, 1);
+      }
+    });
   });
 });

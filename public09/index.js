@@ -10,12 +10,12 @@ function sendData() {
   socket.emit('snakeLocation', s);
 }
 
-function Snake() {
-    this.id = socket.id;
-    this.x = 0;
-    this.y = 0;
-    this.xspeed = 0;
-    this.yspeed = 0;
+function Snake(id, x, y, xspeed, yspeed) {
+    this.id = id;
+    this.x = x;
+    this.y = y;
+    this.xspeed = xspeed;
+    this.yspeed = yspeed;
     this.tail = [];     // new
 
     this.update = function () {
@@ -98,6 +98,7 @@ function update() {
 }
 
 function gameLoop() {
+    sendData();
     clearCanvas();
     update();
     s.update();
@@ -106,13 +107,12 @@ function gameLoop() {
     }
     drawFood();
     s.draw();
-    sendData();
 }
 
 function init() {
     vcanvas = document.getElementById("myCanvas");
     ctx = vcanvas.getContext("2d");
-    s = new Snake();
+    s = new Snake(socket.id, 0, 0, 0, 0);
     pickLocation();
     setInterval(gameLoop, 80);
 }
@@ -127,7 +127,7 @@ function set_key() {
   if (event.keyCode === 38) { key.u = 1; }
   if (event.keyCode === 40) { key.d = 1; }
 
-  socket.emit('keyEvent', key);
+  //socket.emit('keyEvent', key);
 } //키데이터 넘기기
 
 document.onkeydown = set_key;
@@ -139,9 +139,15 @@ socket.on('foodLocation', (foodData) => {
 });
 
 socket.on('snakeLocation', (snakeData) => {
-  s = snakeData;
-});
-
-socket.on('keyEvent', (keyData) => {
-  key = keyData;
+  snakeData.forEach((snakeElement) => {
+    if(snakeElement.id === socket.id){
+      var index = snakeData.indexOf(snakeElement);
+      snakeData.splice(index, 1);
+      for(var j in snakeData){
+        ctx.fillStyle = "blue";
+        ctx.fillRect(snakeData[j].x, snakeData[j].y, scl, scl);
+        ctx.fillStyle = "black";
+      }
+    }
+  });
 });

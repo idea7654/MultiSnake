@@ -14,14 +14,12 @@ io.on('connection', (socket) => {
   console.log("a user connected");
   console.log(socket.id);
 
-  socket.on('snakeLocation', (data) => {
-    //console.log(data.x); //작동
-
-    io.emit('snakeLocation', data);
+  socket.on('snakeLocation', (dataSnake) => {
+    io.emit('snakeLocation', dataSnake);
   });
 
-  socket.on('foodLocation', (data) => {
-    io.emit('foodLocation', data);
+  socket.on('foodLocation', (dataFood) => {
+    io.emit('foodLocation', dataFood);
   });
 
   socket.on('disconnect', () => {

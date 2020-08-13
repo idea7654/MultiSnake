@@ -91,10 +91,10 @@ function drawFood() {
 }
 
 function update() {
-  if(key.l) {s.dir(-1, 0);}
-  if(key.r) {s.dir(1, 0);}
-  if(key.u) {s.dir(0, -1);}
-  if(key.d) {s.dir(0, 1);}
+      if(key.l) {s.dir(-1, 0);}
+      if(key.r) {s.dir(1, 0);}
+      if(key.u) {s.dir(0, -1);}
+      if(key.d) {s.dir(0, 1);}
 }
 
 function gameLoop() {
@@ -108,6 +108,7 @@ function gameLoop() {
     s.draw();
     sendData();
 }
+
 
 function init() {
     vcanvas = document.getElementById("myCanvas");
@@ -132,15 +133,17 @@ function set_key() {
 
 document.onkeydown = set_key;
 
-//socket(받는것만)
+//socket
 
-socket.on('foodLocation', (foodData) => {
-  food = foodData;
+socket.on('foodLocation', (data) => {
+  food = data;
 });
 
 socket.on('snakeLocation', (snakeData) => { //이름바꿔줄
   //console.log(data.x); //작동
-  s = snakeData;
+  s.x = data.x;
+  s.y = data.y;
+  s.tail = data.tail;
 });
 
 socket.on('keyEvent', (keyData) => {

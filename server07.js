@@ -4,6 +4,7 @@ var socket = require('socket.io');
 //app
 var app = express();
 var server = app.listen(3000);
+var players = [];
 
 app.use(express.static('public07'));
 console.log('server is connected');
@@ -16,17 +17,14 @@ io.on('connection', (socket) => {
   //console.log(socket.id);
 
   socket.on('snakeLocation', (dataSnake) => {
-    //console.log(data.xspeed);
-    io.emit('snakeLocation', dataSnake); //1번-이
+    io.emit('snakeLocation', dataSnake);
   });
 
   socket.on('keyEvent', (dataKey) => {
-    //console.log(data);
     io.emit('keyEvent', dataKey);
   });
 
   socket.on('foodLocation', (dataFood) => {
-    //console.log(data);
     io.emit('foodLocation', dataFood);
   });
 

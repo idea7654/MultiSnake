@@ -6,6 +6,10 @@ var scl = 20;
 var food = {x: null, y: null};
 var socket = io();
 
+function sendData() {
+  socket.emit('snakeLocation', s);
+}
+
 function Snake() {
     this.id
     this.x = 0;
@@ -133,20 +137,12 @@ function set_key() {
 document.onkeydown = set_key;
 
 //socket
-socket.on('foodLocation', (data) => {
-  food.x = data.x;
-  food.y = data.y;
+socket.on('foodLocation', (foodData) => {
+  food = foodData;
 });
 
-function sendData() {
-  socket.emit('snakeLocation', s);
-}
-
-function callData() {
-  socket.on('snakeLocation', (data) => {
-    //console.log(data.x); //작동
-    s.x = data.x;
-    s.y = data.y;
-    s.tail = data.tail;
-  });
-}
+socket.on('snakeLocation', (snakeData) => {
+  s.x = snakeData.x;
+  s.y = snakeData.y;
+  s.tail = snakeData.tail;
+});

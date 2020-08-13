@@ -5,6 +5,7 @@ var scl = 20;
 var food = {x: null, y: null};
 var socket = io();
 var key = {l:0, r:0, u:0, d:0};
+var arrSnake = [];
 
 function sendData() {
   socket.emit('snakeLocation', s);
@@ -54,19 +55,25 @@ function Snake(id, x, y, xspeed, yspeed) {
         this.xspeed = x;
         this.yspeed = y;
     };
+}
 
-    this.draw = function () {
-        // new -----------------
-        var i;
-        ctx.fillStyle = 'gray';
-        for (i = 0; i < this.tail.length - 1; i += 1) {
-            ctx.fillRect(this.tail[i].x, this.tail[i].y, scl, scl);
-        }
-        // --------------------
+function drawSnake(si) {
+      var i;
+      if(si.id === s.id){
+        ctx.fillStyle = "gray"
+      }else{
+        ctx.fillStyle = "skyblue";
+      }
+      for (i = 0; i < si.tail.length - 1; i += 1) {
+          ctx.fillRect(si.tail[i].x, si.tail[i].y, scl, scl);
+      }
 
-        ctx.fillStyle = 'black';
-        ctx.fillRect(this.x, this.y, scl, scl);
-    };
+      if(si.id === s.id){
+        ctx.fillStyle = "black";
+      }else{
+        ctx.fillStyle = "blue";
+      }
+      ctx.fillRect(si.x, si.y, scl, scl);
 }
 
 function clearCanvas() {
@@ -98,6 +105,7 @@ function update() {
 }
 
 function gameLoop() {
+    var i = 0;
     sendData();
     clearCanvas();
     update();
@@ -106,7 +114,9 @@ function gameLoop() {
       pickLocation();
     }
     drawFood();
-    s.draw();
+    for(i; i<arrSnake.length; i++){
+      drawSnake(arrSnake[i]);
+    }
 }
 
 function init() {
@@ -119,18 +129,18 @@ function init() {
 
 // key control
 
-function set_key() {
+function set_key(evt) {
   key.l = key.r = key.u = key.d = 0;
+  var clientX = evt.touches[0].clientX;
+  var clientY = evt.touches[0].clientY;
 
-  if (event.keyCode === 37) { key.l = 1; }
-  if (event.keyCode === 39) { key.r = 1; }
-  if (event.keyCode === 38) { key.u = 1; }
-  if (event.keyCode === 40) { key.d = 1; }
+  if(clientX < 100){key.l = 1;}
+  if(clientX > 500){key.r = 1;}
+  if(clientX > 100 && clientX < 500 && clientY < 300){key.u = 1;}
+  if(clientX > 100 && clientX < 500 && clientY > 300){key.d = 1;}
+} //터치컨트롤
 
-  //socket.emit('keyEvent', key);
-} //키데이터 넘기기
-
-document.onkeydown = set_key;
+document.ontouchstart = set_key;
 
 //socket
 
@@ -138,21 +148,6 @@ socket.on('foodLocation', (foodData) => {
   food = foodData;
 });
 
-socket.on('snakeLocation', (snakeData) => {
-  snakeData.forEach((snakeElement) => {
-    if(snakeElement.id === socket.id){
-      var index = snakeData.indexOf(snakeElement);
-      snakeData.splice(index, 1);
-      for(var j in snakeData){
-        ctx.fillStyle = "blue";
-        ctx.fillRect(snakeData[j].x, snakeData[j].y, scl, scl);
-        ctx.fillStyle = "black";
-      }
-    }
-  });
+socket.on('snakeLocation', (arrServer) => {
+  arrSnake = arrServer;
 });
-/*
-socket.on('keyEvent', (keyData) => {
-  key = keyData;
-});
-*/

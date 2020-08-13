@@ -16,33 +16,26 @@ io.on('connection', (socket) => {
   console.log("a user connected");
   //console.log(socket.id);
   socket.on('snakeLocation', (dataSnake) => {
+    var flag;
     if(players.length === 0){
       players.push(dataSnake);
     }else{
+      flag = true;
       for(var j = 0; j < players.length; j++){
         if(players[j].id === dataSnake.id){
           players[j] = dataSnake;
-          break;
+          flag = false;
         }
-        if(j === players.length - 1){
-          players.push(dataSnake);
+        if(players.length < 3){
+          if(flag){
+            players.push(dataSnake);
+          }
         }
       }
     }
     io.emit('snakeLocation', players);
   });
-  /*
-  socket.on('keyEvent', (dataKey) => {
-    //console.log(dataKey);
-    io.emit('keyEvent', dataKey);
-  });
-  */
-/*
-  socket.on('tailInfo', (dataTail) => {
-    console.log(data);
-    io.emit('tailInfo', dataTail);
-  });
-*/
+
   socket.on('foodLocation', (dataFood) => {
     io.emit('foodLocation', dataFood);
   });

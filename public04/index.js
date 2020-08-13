@@ -6,6 +6,10 @@ var scl = 20;
 var food = {x: null, y: null};
 var socket = io();
 
+function sendData() {
+  socket.emit('snakeLocation', s);
+}
+
 function Snake() {
     this.x = 0;
     this.y = 0;
@@ -99,7 +103,6 @@ function gameLoop() {
     drawFood();
     s.draw();
     sendData();
-    callData();
 }
 
 function init() {
@@ -127,13 +130,9 @@ function set_key() {
 document.onkeydown = set_key;
 
 //sockets
-function sendData() {
-  socket.emit('snakeLocation', s);
-}
 
-function callData() {
-  socket.on('snakeLocation', (data) => {
-    s.x = data.x;
-    s.y = data.y;
-  });
-}
+socket.on('snakeLocation', (snakeData) => {
+  s.x = snakeData.x;
+  s.y = snakeData.y;
+  s.tail = snakeData.tail;
+});

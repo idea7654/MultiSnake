@@ -15,8 +15,8 @@ io.on('connection', (socket) => {
   console.log("a user connected");
   console.log(socket.id);
 
-  socket.on('snakeLocation', (data) => {
-    console.log(data);
+  socket.on('snakeLocation', (dataSnake) => {
+    console.log(dataSnake);
   });
 
   socket.on('disconnect', () => {
