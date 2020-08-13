@@ -2,9 +2,11 @@
   "name": "snake01",
   "version": "0.0.0",
   "private": true,
-  "start": "server13.js"
   "dependencies": {
     "express": "~4.16.1",
     "socket.io": "^2.3.0"
+  },
+  "scripts": {
+    "start": "server13.js"
   }
 }
