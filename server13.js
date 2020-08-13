@@ -3,8 +3,7 @@ var socket = require('socket.io');
 
 //app
 var app = express();
-var port = process.env.PORT || 8080
-var server = app.listen(port);
+var server = app.listen(3000);
 var players = [];
 
 app.use(express.static('public13'));
