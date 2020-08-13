@@ -6,10 +6,13 @@ ___
 - 2단계 - 소켓 연결
 - 3단계 - emit이벤트로 콘솔출력해보기, 소켓 아이디 출력
 - 4단계 - 소켓으로 한쪽 미러링 구현(x, y좌표 쏴주고 클라이언트에서 해당 좌표를 모든 연결된 소켓객체에 연결)
-- 5단계 - 먹이 위치 미러링 구현 - 먹이의 위치값만
+- 5단계 - 먹이 위치 미러링 구현
 - 6단계 - 양쪽 미러링 구현(keyEvent를 소켓으로 구현)
-- 7단계 - 소켓 아이디 클라이언트 전송, 클라이언트에서 접속된 모든 소켓아이디 출력
-- 8단계 - 플레이어의 head만을 대상으로 한 멀티플레이 구현 - 미완
+- 7단계 - Snake객체에 소켓Id값을 넣어 서버로 전송
+- 8단계 - 클라이언트의 객체정보를 받아와서 서버에 한번에 저장, 다시 클라이언트로 전송
+- 9단계 - 멀티플레이 구현(head만)
+- 10단계 - 멀티플레이 완성
+- 11단계 - 터치이벤트 구현
 
 ___
 
@@ -107,12 +110,11 @@ function sendData() {
   socket.emit('snakeLocation', s); //현재 Snake의 위치값 전송
 }
 
-function callData() {
-  socket.on('snakeLocation', (data) => {
-    s.x = data.x;
-    s.y = data.y;
-  });
-} //받아온 위치값을 현재 Snake에 적용
+socket.on('snakeLocation', (snakeData) => {
+    s.x = snakeData.x;
+    s.y = snakeData.y;
+    s.tail = snakeData.tail;
+}); //메인클라이언트의 Snake값을 현재 Snake에 적용
 //클라이언트
 ```
 
@@ -121,6 +123,8 @@ socket.on('snakeLocation', (data) => {
     io.emit('snakeLocation', data);
 });//서버
 ```
+
+Tip) s = snakeData로 구현할 수 있으면 이상적이나, 배열안에 Structure를 담아서 보낼 때 Structure안에 배열이 있으면 전송이 안됨.
 
 ___
 
@@ -141,14 +145,14 @@ function pickLocation() {
     socket.emit('foodLocation', food);
 }
 ...
-socket.on('foodLocation', (data) => {
-  food = data;
+socket.on('foodLocation', (foodData) => {
+  food = foodData;
 }); //클라이언트
 ```
 
 ```javascript
-socket.on('foodLocation', (data) => {
-    io.emit('foodLocation', data);
+socket.on('foodLocation', (dataFood) => {
+    io.emit('foodLocation', dataFood);
 }); //서버
 ```
 
@@ -164,8 +168,18 @@ x, y좌표값은 넘어갔으나 key의 정보를 바탕으로 하는 xspeed, ys
 
 스네이크가 알 수 없기 때문에 keyEvent를 소켓을 통해 실시간 통신으로 구현하였다.
 
+또한 데이터를 전송하기에 용이하도록 기존의 각각의 변수에 주어졌던 key값을 Structure로 구현하였다.
+
 ```javascript
 var key = {l: 0, r:0, u:0, d:0};
+
+function update(){
+  if(key.l) {s.dir(-1, 0);}
+  if(key.r) {s.dir(1, 0);}
+  if(key.u) {s.dir(0, -1);}
+  if(key.d) {s.dir(0, 1);}
+}
+
 function set_key() {
 
     if (event.keyCode === 37) { key.l = 1; }
@@ -212,6 +226,7 @@ ___
 2. 배열이 비어있다면 클라이언트의 객체값 삽입
 3. 배열이 비어있지 않다면 배열의 id값과 클라이언트 객체의 id값을 검사해서
 4. 같으면 덮어씌우고 다르면 후단에 삽입한다.
+5. disconnect 이벤트가 발생하면, disconnect된 player의 id값을 검사해 배열에서 제거한다.
 
 ```javascript
 socket.on('snakeLocation', (data) => {
@@ -228,9 +243,136 @@ socket.on('snakeLocation', (data) => {
         }
       }
     }
+  	console.log(players);
     io.emit('snakeLocation', players);
-  }); //서버
+}); 
+	
+socket.on('disconnect', () => {
+    console.log('disconnected');
+    players.forEach((element) => {
+      if(element.id === socket.id){
+        var index = players.indexOf(element);
+        players.splice(index, 1);
+      }
+    });
+}); //서버
 ```
+
+___
+
+## 9단계
+
+___
+
+서버에서 받아온 데이터로 멀티플레이를 구현하였다.
+
+변경점은 다음과 같다.
+
+```javascript
+socket.on('snakeLocation', (snakeData) => {
+  snakeDana.foreach((snakeElement) => {
+    if(snakeElement.id === socket.id){
+      var index = snakeData.indexOf(snakeElement);
+      snakeData.splice(index, 1);
+      for(var j in snakeData){
+        ctx.fillStyle = "blue";
+        ctx.fillRect(snakeData[j].x, snakeData[j].y, scl, scl);
+        ctx.fillStyle = "black";
+      }
+    }
+  });
+});
+
+//key이벤트 삭제
+```
+
+로직을 살펴보자.
+
+1. 접속된 클라이언트들의 Snake정보가 넘어온다
+2. 배열하나하나마다의 아이디와 현재 클라이언트의 아이디가 같은지 검사한다
+3. 같다면 배열에서 자신의 클라이언트 정보가 담긴 Snake정보를 삭제한다(이미 s로 그려지고 있으므로)
+4. 이후 나머지 클라이언트의 snake를 파란색으로 그린다
+
+Tips) 괜찮은 로직이라고 생각했지만 치명적인 단점이 있었다. 캔버스를 이용할 때, draw, update는 따로 작성해야 충돌하지 않는다는 점이었다.
+
+___
+
+## 10단계
+
+___
+
+9단계에서 서술했듯, Update부분에서 Draw를 하니 멀티플레이는 실행이 되었으나, 다른 클라이언트의 색이 검정색과 파란색으로 점등하는 것을 알 수 있다.
+
+또한, head부분만을 작성하였는데 tail을 그릴것을 Update부분에서 그리게 되면 위에있는 draw를 한 번 더 작성하는 것이 된다.
+
+따라서, 생성자 함수 안에 있던 draw함수를 빼내어 자신의 Snake뿐만 아니라 다른 클라이언트의 Snake를 그릴 때도 사용하게 하였다.
+
+```javascript
+var arrSnake = []; //서버에서 받아온 배열을 socket.on밖에서 사용할 수 있도록 복사할 배열 생성
+
+//생성자 함수의 this.draw삭제
+
+function drawSnake(si) {
+  var i;
+  if(si.id === s.id){
+    ctx.fillStyle = "gray";
+  }else{
+    ctx.fillStyle = "skyblue";
+  }
+  for(i = 0; i < si.tail.length - 1; i += 1){
+    ctx.fillRect(si.tail[i].x, si.tail[i].y, scl, scl);
+  }
+  //tail 그리는 로직. 자신의 꼬리는 gray로, 다른 클라이언트의 꼬리는 skyblue로 그려준다.
+  if(si.id === s.id){
+    ctx.fillStyle = "black";
+  }else{
+    ctx.fillStyle = "blue";
+  }
+  ctx.fillRect(si.x, si.y, scl, scl);
+  //head 그리는 로직. 자신의 head는 black으로, 다른 클라이언트의 head는 blue로 그려준다.
+}
+
+function gameLoop(){
+  var i = 0;
+  ...
+  for(i; i < arrSnake.length; i++){
+    drawSnake(arrSnake[i]);
+  }
+}
+
+socket.on('snakeLocation', (arrServer) => {
+  arrSnake = arrServer;
+});
+```
+
+___
+
+## 11단계
+
+___
+
+key이벤트를 touch이벤트로 바꾸어서 모바일 환경에서 사용할 수 있도록 하였다.
+
+변경된 점은 다음과 같다.
+
+```javascript
+function set_key(evt){ //evt는 터치이벤트가 발생했을 때의 정보다.
+  key.l = key.r = key.u = key.d = 0;
+  var clientX = evt.touches[0].clientX;
+  var clientY = evt.touches[0].clientY;
+  
+  if(clientX < 100){key.l = 1;}
+  if(clientX > 500){key.r = 1;}
+  if(clientX > 100 && clientX < 500 && clientY < 300){key.u = 1;}
+  if(clientX > 100 && clientX < 500 && clientY > 300){key.d = 1;}
+}
+
+document.ontouchstart = set_key;
+```
+
+
+
+ 
 
 
 
